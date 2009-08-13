@@ -6,9 +6,10 @@
 
 (in-package :common-lisp-user)
 
-(defpackage :hu.dwim.lazy-eval.test
-  (:use :hu.dwim.common-lisp
+(defpackage :hu.dwim.lazy-eval
+  (:use :hu.dwim.asdf
+        :hu.dwim.common-lisp
         :hu.dwim.def
-        :hu.dwim.lazy-eval
-        :hu.dwim.stefil
-        :hu.dwim.syntax-sugar))
+        :hu.dwim.defclass-star
+        :hu.dwim.syntax-sugar
+        :hu.dwim.walker))

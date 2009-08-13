@@ -4,11 +4,12 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-lazy-eval)
+(in-package :hu.dwim.lazy-eval)
 
 ;;;;;;
 ;;; Delay
 
+;; TODO: move these to a utility or what? (wui has the same)
 (def (macro e) delay (&body forms)
   "strict -> lazy"
   `(lambda ()
@@ -71,7 +72,7 @@
 (def function lazy-name (name)
   (bind ((package (symbol-package name)))
     (format-symbol (if (eq package (find-package :common-lisp))
-                       (find-package :cl-lazy-eval)
+                       (find-package :hu.dwim.lazy-eval)
                        package)
                    "~A/lazy" name)))
 
@@ -84,7 +85,7 @@
       name))
 
 (def macro with-lazy-eval (&body forms)
-  `(force ,(lazy-unwalk-form (cl-walker:walk-form `(progn ,@forms)))))
+  `(force ,(lazy-unwalk-form (hu.dwim.walker:walk-form `(progn ,@forms)))))
 
 (def generic lazy-unwalk-form (form)
   (:method ((form constant-form))
@@ -132,4 +133,4 @@
        (setf (gethash ',name *lazy-functions*) ',lazy-name)
        (defun ,lazy-name ,args
          (delay ,(bind ((*lazy-function-name* name))
-                       (lazy-unwalk-form (cl-walker:walk-form `(progn ,@forms)))))))))
+                       (lazy-unwalk-form (hu.dwim.walker:walk-form `(progn ,@forms)))))))))

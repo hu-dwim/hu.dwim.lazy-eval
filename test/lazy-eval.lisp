@@ -1,10 +1,10 @@
-;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
+;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
 ;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-lazy-eval-test)
+(in-package :hu.dwim.lazy-eval.test)
 
 (def lazy-function cons (a b)
   (!cons a b))
@@ -18,6 +18,7 @@
 (def lazy-function list (&rest args)
   (apply '!list args))
 
+#+nil
 (def lazy-function mapcar (function list &rest lists)
   (if list
       (cons (apply function
@@ -119,6 +120,7 @@
     result))
 
 ;; optimized
+#+nil
 (def function take/lazy (list n)
   (declare (optimize (speed 3) (safety 0) (debug 0))
            (type fixnum n)
