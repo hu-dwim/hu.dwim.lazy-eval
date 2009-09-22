@@ -19,7 +19,6 @@
                :hu.dwim.syntax-sugar+swank
                :hu.dwim.walker)
   :components ((:module "source"
-                :components ((:file "package")
-                             (:file "duplicates" :depends-on ("package"))
-                             (:file "configuration" :depends-on ("duplicates"))
-                             (:file "lazy-eval" :depends-on ("configuration"))))))
+                :components ((:file "configuration" :depends-on ("package"))
+                             (:file "lazy-eval" :depends-on ("configuration"))
+                             (:file "package")))))
