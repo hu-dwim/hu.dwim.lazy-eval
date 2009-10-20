@@ -7,7 +7,7 @@
 (in-package :common-lisp-user)
 
 (defpackage :hu.dwim.lazy-eval.test
-  (:use :hu.dwim.common-lisp
+  (:use :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.lazy-eval
         :hu.dwim.stefil
