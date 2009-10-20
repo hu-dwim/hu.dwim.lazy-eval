@@ -13,7 +13,7 @@
   :author ("Levente Mészáros <levente.meszaros@gmail.com>")
   :licence "BSD / Public domain"
   :description "Lazy evaluation"
-  :depends-on (:hu.dwim.common-lisp
+  :depends-on (:hu.dwim.common
                :hu.dwim.def
                :hu.dwim.defclass-star
                :hu.dwim.syntax-sugar+swank
