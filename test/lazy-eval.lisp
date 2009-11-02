@@ -88,9 +88,6 @@
 (def function integer-list (i)
   (cons i (integer-list (+ i 1))))
 
-(def function integer-list/lazy (i)
-  (cons/lazy i (delay (force (integer-list/lazy (+ 1 (force i)))))))
-
 (def function take (list n)
   ;; for simpliciy it returns the reverse
   (let ((result nil))
@@ -105,6 +102,7 @@
      end)
     result))
 
+#+nil
 (def function take/lazy (list n)
   ;; for simpliciy it returns the reverse
   (let ((result nil))
@@ -171,14 +169,8 @@
 (def function double (a)
   (* 2 a))
 
-(def function double/lazy (a)
-  (* 2 (force a)))
-
 (def function double-list (list)
   (mapcar #'double list))
-
-(def function double-list/lazy (list)
-  (mapcar/lazy #'double/lazy list))
 
 (def test test-double-integer-list ()
   (is (equal (force* (take/lazy (double-list/lazy (integer-list/lazy 1)) 3))

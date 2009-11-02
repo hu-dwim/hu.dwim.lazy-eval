@@ -74,7 +74,7 @@
     (format-symbol (if (eq package (find-package :common-lisp))
                        (find-package :hu.dwim.lazy-eval)
                        package)
-                   "~A/lazy" name)))
+                   "~A/LAZY" name)))
 
 (def function bang-function-name? (name)
   (eq #\! (elt (symbol-name name) 0)))
@@ -105,7 +105,11 @@
   (:method ((form free-variable-reference-form))
     (name-of form))
 
-  (:method ((form lexical-variable-binding-form))
+  (:method ((form lexical-variable-binder-form))
+    ;; TODO:
+    )
+
+  (:method ((form let-form))
     ;; TODO:
     )
 
