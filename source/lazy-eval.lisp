@@ -105,7 +105,7 @@
   (:method ((form free-variable-reference-form))
     (name-of form))
 
-  (:method ((form variable-binding-form))
+  (:method ((form lexical-variable-binding-form))
     ;; TODO:
     )
 
