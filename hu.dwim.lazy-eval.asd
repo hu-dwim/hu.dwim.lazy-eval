@@ -15,10 +15,9 @@
   :description "Lazy evaluation"
   :depends-on (:hu.dwim.common
                :hu.dwim.def
+               :hu.dwim.util
                :hu.dwim.defclass-star
-               :hu.dwim.syntax-sugar+swank
                :hu.dwim.walker)
   :components ((:module "source"
-                :components ((:file "configuration" :depends-on ("package"))
-                             (:file "lazy-eval" :depends-on ("configuration"))
+                :components ((:file "lazy-eval" :depends-on ("package"))
                              (:file "package")))))

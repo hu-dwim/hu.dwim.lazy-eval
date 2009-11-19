@@ -4,12 +4,14 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.util)
 
-(defpackage :hu.dwim.lazy-eval
+(def package :hu.dwim.lazy-eval
   (:use :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.defclass-star
         :hu.dwim.syntax-sugar
-        :hu.dwim.walker))
+        :hu.dwim.util
+        :hu.dwim.walker)
+  (:readtable-setup (enable-standard-hu.dwim-syntaxes)))
