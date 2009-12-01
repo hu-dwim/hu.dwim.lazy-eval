@@ -11,8 +11,7 @@
 (defsystem :hu.dwim.lazy-eval
   :class hu.dwim.system
   :author ("Levente Mészáros <levente.meszaros@gmail.com>")
-  :licence "BSD / Public domain"
-  :description "Lazy evaluation"
+  :description "Delimieted, compiled lazy evaluation."
   :depends-on (:hu.dwim.common
                :hu.dwim.def
                :hu.dwim.util
