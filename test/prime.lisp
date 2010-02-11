@@ -7,37 +7,25 @@
 (in-package :hu.dwim.lazy-eval.test)
 
 ;;;;;;
-;;; integers-from
+;;; Primes
 
 (def lazy-function integers-from (i)
   (cons i (integers-from (1+ i))))
-
-;;;;;;
-;;; strike-off
 
 (def lazy-function strike-off (i l)
   (if (zerop (mod (car l) i))
       (strike-off i (cdr l))
       (cons (car l) (strike-off i (cdr l)))))
 
-;;;;;;
-;;; sieve
-
 (def lazy-function sieve (l)
   (cons (car l)
         (sieve (strike-off (car l) l))))
-
-;;;;;;
-;;; take
 
 (def lazy-function take (l n)
   (if (zerop n)
       nil
       (cons (car l)
             (take (cdr l) (1- n)))))
-
-;;;;;;
-;;; primes
 
 (def lazy-function primes ()
   (sieve (integers-from 2)))

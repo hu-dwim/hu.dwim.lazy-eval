@@ -40,7 +40,7 @@
 ;;;    it passes argument values untouched, and delays return values
 
 ;;;;;;
-;;; Delay
+;;; Delay and Force
 
 (def (macro e) delay (&body forms)
   "strict -> lazy"
@@ -51,9 +51,6 @@
          (if (eq ,variable ',unbound-value)
              (setf ,variable (progn ,@forms))
              ,variable)))))
-
-;;;;;;
-;;; Force
 
 (def (function e) force (value)
   "lazy -> strict"
