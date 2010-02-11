@@ -7,18 +7,6 @@
 (in-package :hu.dwim.lazy-eval.test)
 
 ;;;;;;
-;;; cons
-
-(def lazy-function cons (car cdr)
-  (common-lisp:cons (lazy car) (lazy cdr)))
-
-(def lazy-function car (cell)
-  (common-lisp:car cell))
-
-(def lazy-function cdr (cell)
-  (common-lisp:cdr cell))
-
-;;;;;;
 ;;; integers-from
 
 (def lazy-function integers-from (i)

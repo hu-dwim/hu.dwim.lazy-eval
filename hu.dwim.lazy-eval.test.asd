@@ -15,4 +15,5 @@
   :components ((:module "test"
                 :components ((:file "package")
                              (:file "suite" :depends-on ("package"))
-                             (:file "lazy-eval" :depends-on ("suite"))))))
+                             (:file "cons" :depends-on ("suite"))
+                             (:file "prime" :depends-on ("cons"))))))

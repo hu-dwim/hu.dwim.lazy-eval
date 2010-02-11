@@ -35,7 +35,7 @@
 ;;;  - when a lazy function calls a lazy function (lazy function names end with /lazy)
 ;;;    it passes argument values untouched, and takes return values untouched
 ;;;  - when a lazy function calls a strict function
-;;;    it forces argument values unless the function cares about the argument's identity, and takes return values untouched
+;;;    it forces argument values unless the argument is marked lazy, and takes return values untouched
 ;;;  - when a lazy function calls itself recursively
 ;;;    it passes argument values untouched, and delays return values
 
@@ -79,16 +79,20 @@
 
 (def special-variable *lazy-function-name*)
 
-(def (namespace e) lazy-function (args &body forms)
-  (bind ((lazy-function-name (lazy-function-name -name-)))
+(def (namespace e) lazy-function)
+
+(def (definer e) lazy-function (name args &body forms)
+  (bind ((lazy-function-name (lazy-function-name name)))
     `(progn
-       (def function ,-name- ,args
+       (eval-when (:compile-toplevel)
+         (setf (find-lazy-function ',name) (lambda ())))
+       (def function ,name ,args
          (force (,lazy-function-name ,@args)))
        (def function ,lazy-function-name ,args
-         ,@(bind ((*lazy-function-name* -name-))
+         ,@(bind ((*lazy-function-name* name))
              (with-active-layers (lazy-eval)
                (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
-       (fdefinition ',-name-))))
+       (fdefinition ',name))))
 
 (def function lazy-function-name (name)
   (bind ((package (symbol-package name)))
@@ -107,6 +111,11 @@
   "Marker to pass value lazily instead of strict"
   value)
 
+(def layered-method hu.dwim.walker::function-name? :in lazy-eval (name)
+  (or (call-next-method)
+      (eq name *lazy-function-name*)
+      (find-lazy-function name :otherwise nil)))
+
 (def layered-method unwalk-form :in lazy-eval ((form application-form))
   (bind ((operator (operator-of form)))
     (cond ((or (find-lazy-function operator :otherwise nil)
@@ -122,6 +131,3 @@
                                        (unwalk-form (first (arguments-of argument)))
                                        `(force ,(unwalk-form argument))))
                                  (arguments-of form)))))))
-
-(def layered-method unwalk-form :in lazy-eval ((form if-form))
-     (call-next-method))
