@@ -4,11 +4,15 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.util)
 
-(defpackage :hu.dwim.lazy-eval.test
+(def package :hu.dwim.lazy-eval.test
   (:use :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.lazy-eval
         :hu.dwim.stefil
-        :hu.dwim.syntax-sugar))
+        :hu.dwim.syntax-sugar)
+  (:shadow #:cons
+           #:car
+           #:cdr)
+  (:readtable-setup (enable-standard-hu.dwim-syntaxes)))

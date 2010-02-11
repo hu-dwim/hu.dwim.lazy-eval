@@ -6,172 +6,53 @@
 
 (in-package :hu.dwim.lazy-eval.test)
 
-(def lazy-function cons (a b)
-  (!cons a b))
+;;;;;;
+;;; cons
 
-(def lazy-function car (list)
-  (!car list))
+(def lazy-function cons (car cdr)
+  (common-lisp:cons (lazy car) (lazy cdr)))
 
-(def lazy-function cdr (list)
-  (!cdr list))
+(def lazy-function car (cell)
+  (common-lisp:car cell))
 
-(def lazy-function list (&rest args)
-  (apply '!list args))
+(def lazy-function cdr (cell)
+  (common-lisp:cdr cell))
 
-#+nil
-(def lazy-function mapcar (function list &rest lists)
-  (if list
-      (cons (apply function
-                   (car list)
-                   (!mapcar 'car lists))
-            (apply 'mapcar function
-                   (cdr list)
-                   (!mapcar 'cdr lists)))))
+;;;;;;
+;;; integers-from
 
-(def lazy-function integer-list (i)
-  (cons i (integer-list (+ i 1))))
+(def lazy-function integers-from (i)
+  (cons i (integers-from (1+ i))))
 
-(def lazy-function take (list n)
-  ;; for simpliciy it returns the reverse
-  (let ((result nil))
-    (tagbody
-     loop
-       (if (= n 0)
-           (go end)
-           (setq n (- n 1)))
-       (setq result (cons (car list) result))
-       (setq list (cdr list))
-       (go loop)
-     end)
-    result))
+;;;;;;
+;;; strike-off
 
-(def lazy-function + (&rest args)
-  (apply '+ args))
+(def lazy-function strike-off (i l)
+  (if (zerop (mod (car l) i))
+      (strike-off i (cdr l))
+      (cons (car l) (strike-off i (cdr l)))))
 
-(def lazy-function double (a)
-  (* 2 a))
+;;;;;;
+;;; sieve
 
-(def lazy-function double-list (list)
-  (mapcar 'double list))
+(def lazy-function sieve (l)
+  (cons (car l)
+        (sieve (strike-off (car l) l))))
 
-;;;;;
-;;; Examples
+;;;;;;
+;;; take
 
-(def function cons/lazy (a b)
-  (delay (cons a b)))
+(def lazy-function take (l n)
+  (if (zerop n)
+      nil
+      (cons (car l)
+            (take (cdr l) (1- n)))))
 
-(def function car/lazy (list)
-  (delay (car (force list))))
+;;;;;;
+;;; primes
 
-(def function cdr/lazy (list)
-  (delay (cdr (force list))))
+(def lazy-function primes ()
+  (sieve (integers-from 2)))
 
-(def test test-cons ()
-  (is (equal (force* (cons/lazy 1 2))
-             (cons 1 2)))
-  (is (equal (force* (car/lazy (cons/lazy 1 2)))
-             1))
-  (is (equal (force* (cdr/lazy (cons/lazy 1 2)))
-             2)))
-
-(def function list/lazy (&rest args)
-  (delay (apply #'list args)))
-
-(def test test-list ()
-  (is (equal (force* (list/lazy 1 2 3))
-             (list 1 2 3))))
-
-(def test test-list-and-cons ()
-  (is (equal (force* (list/lazy (cons/lazy 'a 'b) 1 2 3))
-             (list '(a . b) 1 2 3))))
-
-(def function integer-list (i)
-  (cons i (integer-list (+ i 1))))
-
-(def function take (list n)
-  ;; for simpliciy it returns the reverse
-  (let ((result nil))
-    (tagbody
-     loop
-       (if (= n 0)
-           (go end)
-           (setq n (- n 1)))
-       (setq result (cons (car list) result))
-       (setq list (cdr list))
-       (go loop)
-     end)
-    result))
-
-#+nil
-(def function take/lazy (list n)
-  ;; for simpliciy it returns the reverse
-  (let ((result nil))
-    (tagbody
-     loop
-       (if (= (force n) 0)
-           (go end)
-           (setq n (- (force n) 1)))
-       (setq result (cons/lazy (car/lazy list) result))
-       (setq list (cdr/lazy list))
-       (go loop)
-     end)
-    result))
-
-;; optimized
-#+nil
-(def function take/lazy (list n)
-  (declare (optimize (speed 3) (safety 0) (debug 0))
-           (type fixnum n)
-           (type list list))
-  ;; for simpliciy it returns the reverse
-  (let ((result nil))
-    (tagbody
-     loop
-       (if (= n 0)
-           (go end)
-           (setq n (- n 1)))
-       (setq result (cons (car list) result))
-       (setq list (force (cdr list)))
-       (go loop)
-     end)
-    result))
-
-(def test test-integer-list ()
-  (is (equal (force* (take/lazy (integer-list/lazy 1) 3))
-             (list 3 2 1))))
-
-#+nil
-(def function mapcar (function list &rest lists)
-  (if list
-      (cons (apply function
-                   (car list)
-                   (mapcar #'car lists))
-            (apply #'mapcar function
-                   (cdr list)
-                   (mapcar #'cdr lists)))))
-
-(def function mapcar/lazy (function list &rest lists)
-  (if (force list)
-      (cons/lazy (apply function
-                        (force (car/lazy list))
-                        (force (mapcar #'car/lazy lists)))
-                 (delay (force (apply #'mapcar/lazy function
-                                      (cdr/lazy list)
-                                      (mapcar #'cdr/lazy lists)))))))
-
-(def test test-mapcar ()
-  (is (equal (force* (mapcar/lazy #'double (list/lazy 1 2 3)))
-             '(2 4 6))))
-
-(def function +/lazy (&rest args)
-  (apply #'+ (mapcar #'force args)))
-
-(def function double (a)
-  (* 2 a))
-
-(def function double-list (list)
-  (mapcar #'double list))
-
-(def test test-double-integer-list ()
-  (is (equal (force* (take/lazy (double-list/lazy (integer-list/lazy 1)) 3))
-             (list 6 4 2))))
+(def test test/primes ()
+  (is (equal (force-recursively (take (primes) 10)) '(2 3 5 7 11 13 17 19 23 29))))

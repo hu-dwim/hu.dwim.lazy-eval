@@ -18,6 +18,5 @@
 
   (:shadowing-import-from :hu.dwim.lazy-eval
                           #:delay
-                          #:delay*
                           #:force
-                          #:force*))
+                          #:force-recursively))

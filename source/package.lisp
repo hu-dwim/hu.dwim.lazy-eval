@@ -7,7 +7,8 @@
 (in-package :hu.dwim.util)
 
 (def package :hu.dwim.lazy-eval
-  (:use :hu.dwim.asdf
+  (:use :contextl
+        :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.defclass-star
