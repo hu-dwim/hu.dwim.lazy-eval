@@ -69,7 +69,15 @@
 
   (:method ((value cons))
     (cons (force-recursively (car value))
-          (force-recursively (cdr value)))))
+          (force-recursively (cdr value))))
+
+  (:method ((instance standard-object))
+    (bind ((class (class-of instance)))
+      (dolist (slot (class-slots class))
+        (when (slot-boundp-using-class class instance slot)
+          (setf (slot-value-using-class class instance slot)
+                (force-recursively (slot-value-using-class class instance slot)))))
+      instance)))
 
 ;;;;;;
 ;;; Definer
