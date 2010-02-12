@@ -68,8 +68,8 @@
     (force-recursively (funcall value)))
 
   (:method ((value cons))
-    (cons (force-recursively (car value))
-          (force-recursively (cdr value))))
+    (setf (car value) (force-recursively (car value))
+          (cdr value) (force-recursively (cdr value))))
 
   (:method ((instance standard-object))
     (bind ((class (class-of instance)))
