@@ -20,4 +20,6 @@
 
 (def test test/cons ()
   (is (= 1 (car (cons 1 2))))
-  (is (= 2 (cdr (cons 1 2)))))
+  (is (= 1 (with-lazy-eval (car (cons 1 2)))))
+  (is (= 2 (cdr (cons 1 2))))
+  (is (= 2 (with-lazy-eval (cdr (cons 1 2))))))

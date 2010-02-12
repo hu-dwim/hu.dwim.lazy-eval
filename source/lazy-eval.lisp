@@ -69,7 +69,8 @@
 
   (:method ((value cons))
     (setf (car value) (force-recursively (car value))
-          (cdr value) (force-recursively (cdr value))))
+          (cdr value) (force-recursively (cdr value)))
+    value)
 
   (:method ((instance standard-object))
     (bind ((class (class-of instance)))
@@ -84,7 +85,17 @@
 
 (def special-variable *lazy-function-name*)
 
+(def function lazy-function-name (name)
+  (bind ((package (symbol-package name)))
+    (format-symbol package "~A/LAZY" name)))
+
 (def (namespace e) lazy-function)
+
+(def (macro e) with-lazy-eval (&body forms)
+  (bind ((*lazy-function-name* nil))
+    `(force-recursively
+       ,@(with-active-layers (lazy-eval)
+           (mapcar 'unwalk-form (body-of (walk-form `(progn ,@forms))))))))
 
 (def (definer e) lazy-function (name args &body forms)
   (bind ((lazy-function-name (lazy-function-name name)))
@@ -92,19 +103,12 @@
        (eval-when (:compile-toplevel)
          (setf (find-lazy-function ',name) (lambda ())))
        (def function ,name ,args
-         (force (,lazy-function-name ,@args)))
+         (force-recursively (,lazy-function-name ,@args)))
        (def function ,lazy-function-name ,args
          ,@(bind ((*lazy-function-name* name))
              (with-active-layers (lazy-eval)
                (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
        (fdefinition ',name))))
-
-(def function lazy-function-name (name)
-  (bind ((package (symbol-package name)))
-    (format-symbol (if (eq package (find-package :common-lisp))
-                       (find-package :hu.dwim.lazy-eval)
-                       package)
-                   "~A/LAZY" name)))
 
 ;;;;;;
 ;;; Walk/unwalk

@@ -31,4 +31,4 @@
   (sieve (integers-from 2)))
 
 (def test test/primes ()
-  (is (equal (force-recursively (take (primes) 10)) '(2 3 5 7 11 13 17 19 23 29))))
+  (is (equal (with-lazy-eval (take (primes) 10)) '(2 3 5 7 11 13 17 19 23 29))))
