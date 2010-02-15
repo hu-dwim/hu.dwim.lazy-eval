@@ -95,6 +95,7 @@
   "Defines a function called NAME with arguments ARGS and the body FORMS. The function is defined in both LAZY and STRICT forms."
   (bind ((lazy-function-name (lazy-function-name name))
          (lazy-forms (with-active-layers (lazy-eval)
+                       (setf (find-lazy-function name) (lambda ()))
                        (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
     `(progn
        (eval-when (:compile-toplevel)
