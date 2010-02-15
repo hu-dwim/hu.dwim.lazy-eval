@@ -77,7 +77,7 @@
 
 (def (special-variable e) *lazy-function-call-level* 0)
 
-(def (special-variable e) *immediate-lazy-function-call-level-limit* 10)
+(def (special-variable e) *immediate-lazy-function-call-level-limit* 1)
 
 (def (function e) lazy-function-name (name)
   "Returns a name based on NAME suitable for lazy function definition."
