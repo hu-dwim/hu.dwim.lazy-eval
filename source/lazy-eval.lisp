@@ -10,17 +10,11 @@
 ;;; API
 ;;;
 ;;; Values:
-;;;  - a delayed computation is a closure that must be forced to get the actual strict value behind
-;;;  - a delayed computation is only evaluated once, thus the strict value behind is remembered
-;;;  - a strict value is any value that is not a delayed computation
-;;;  - a lazy value is either a strict value or a delayed computation
-;;;
-;;; Special forms:
-;;;  - delay takes a list of forms and creates a delayed computation that will evaluate the forms as an implicit progn
-;;;  - force takes a form that evaluates to a lazy value and returns a strict value
+;;;  - a strict value is any value that is not a delayed computation, and does not refer to a delayed computation (recursively)
+;;;  - a lazy value is either a strict value or a delayed computation or some
 ;;;
 ;;; Types of function argument values and return values:
-;;;  - a lazy function takes lazy argument values, and returns lazy return values, the function name ends with /lazy
+;;;  - a lazy function takes lazy argument values, and returns lazy return values, the function name ends with /lazy by convention
 ;;;  - a strict function takes strict argument values, and returns strict return values
 ;;;
 ;;; Defining functions:
@@ -31,19 +25,17 @@
 ;;;  - when a strict function calls a strict function (already provided by the VM)
 ;;;    it passes argument values untouched, and takes return values untouched
 ;;;  - when a strict function calls a lazy function (a separate function is created for this without suffix)
-;;;    it passes argument values untouched, and forces return values
+;;;    it passes argument values untouched, and forces return values recursively
 ;;;  - when a lazy function calls a lazy function (lazy function names end with /lazy)
 ;;;    it passes argument values untouched, and takes return values untouched
 ;;;  - when a lazy function calls a strict function
-;;;    it forces argument values unless the argument is marked lazy, and takes return values untouched
-;;;  - when a lazy function calls itself recursively
-;;;    it passes argument values untouched, and delays return values
+;;;    it forces argument values recursively unless the argument is marked lazy, and takes return values untouched
 
 ;;;;;;
 ;;; Delay and Force
 
 (def (macro e) delay (&body forms)
-  "strict -> lazy"
+  "DELAY takes a list of FORMS and creates a delayed computation that will evaluate FORMS as an implicit progn when invoked. The result of DELAY is a lambda or closure (capturing the necessary environment) that must be given to FORCE to get the actual value behind. A delayed computation is only evaluated once, thus the computation result is remembered and reused on subsequent invokations."
   (bind ((variable (gensym))
          (unbound-value (gensym)))
     `(bind ((,variable ',unbound-value))
@@ -53,13 +45,13 @@
              ,variable)))))
 
 (def (function e) force (value)
-  "lazy -> strict"
+  "FORCE takes a VALUE that may or may not be a delayed computation and returns a value that is definitely not a delayed computation."
   (if (functionp value)
       (force (funcall value))
       value))
 
 (def (generic e) force-recursively (value)
-  (:documentation "lazy -> strict recursively")
+  (:documentation "FORCE-RECURSIVELY takes a VALUE and returns a value that does not refer to any delayed computation through references.")
 
   (:method (value)
     value)
@@ -83,31 +75,37 @@
 ;;;;;;
 ;;; Definer
 
-(def special-variable *lazy-function-name*)
+(def (special-variable e) *lazy-function-call-level* 0)
 
-(def function lazy-function-name (name)
-  (bind ((package (symbol-package name)))
-    (format-symbol package "~A/LAZY" name)))
+(def (special-variable e) *immediate-lazy-function-call-level-limit* 10)
+
+(def (function e) lazy-function-name (name)
+  "Returns a name based on NAME suitable for lazy function definition."
+  (format-symbol (symbol-package name) "~A/LAZY" name))
 
 (def (namespace e) lazy-function)
 
 (def (macro e) with-lazy-eval (&body forms)
-  (bind ((*lazy-function-name* nil))
-    `(force-recursively
-       ,@(with-active-layers (lazy-eval)
-           (mapcar 'unwalk-form (body-of (walk-form `(progn ,@forms))))))))
+  "WITH-LAZY-EVAL evaluates FORMS using lazy evaluation semantics and returns a strict value."
+  `(force-recursively
+    ,@(with-active-layers (lazy-eval)
+        (mapcar 'unwalk-form (body-of (walk-form `(progn ,@forms)))))))
 
 (def (definer e) lazy-function (name args &body forms)
-  (bind ((lazy-function-name (lazy-function-name name)))
+  "Defines a function called NAME with arguments ARGS and the body FORMS. The function is defined in both LAZY and STRICT forms."
+  (bind ((lazy-function-name (lazy-function-name name))
+         (lazy-forms (with-active-layers (lazy-eval)
+                       (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
     `(progn
        (eval-when (:compile-toplevel)
          (setf (find-lazy-function ',name) (lambda ())))
        (def function ,name ,args
          (force-recursively (,lazy-function-name ,@args)))
        (def function ,lazy-function-name ,args
-         ,@(bind ((*lazy-function-name* name))
-             (with-active-layers (lazy-eval)
-               (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
+         (if (> *lazy-function-call-level* *immediate-lazy-function-call-level-limit*)
+             (delay ,@lazy-forms)
+             (bind ((*lazy-function-call-level* (1+ *lazy-function-call-level*)))
+               ,@lazy-forms)))
        (fdefinition ',name))))
 
 ;;;;;;
@@ -117,22 +115,17 @@
   ())
 
 (def (function e) lazy (value)
-  "Marker to pass value lazily instead of strict"
+  "LAZY is marker to signify the intent that VALUE must be passed in lazily instead of strictly to a strict function. This can only be done if the strict function does not look at the actual value (e.g. CONS)."
   value)
 
 (def layered-method hu.dwim.walker::function-name? :in lazy-eval (name)
   (or (call-next-method)
-      (eq name *lazy-function-name*)
       (find-lazy-function name :otherwise nil)))
 
 (def layered-method unwalk-form :in lazy-eval ((form application-form))
   (bind ((operator (operator-of form)))
-    (cond ((or (find-lazy-function operator :otherwise nil)
-               (eq operator *lazy-function-name*))
-           (bind ((result `(,(lazy-function-name operator) ,@(mapcar 'unwalk-form (arguments-of form)))))
-             (if (eq operator *lazy-function-name*)
-                 `(delay ,result)
-                 result)))
+    (cond ((find-lazy-function operator :otherwise nil)
+           `(,(lazy-function-name operator) ,@(mapcar 'unwalk-form (arguments-of form))))
           (t
            `(,operator ,@(mapcar (lambda (argument)
                                    (if (and (typep argument 'free-application-form)
