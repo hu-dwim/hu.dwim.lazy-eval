@@ -10,26 +10,26 @@
 ;;; API
 ;;;
 ;;; Values:
-;;;  - a strict value is any value that is not a delayed computation, and does not refer to a delayed computation (recursively)
-;;;  - a lazy value is either a strict value or a delayed computation or some
+;;;  - an eager value is any value that is not a delayed computation, and does not refer to a delayed computation (recursively)
+;;;  - a lazy value is either an eager value or a delayed computation or something that refers to a delayed computation (recursively)
 ;;;
-;;; Types of function argument values and return values:
-;;;  - a lazy function takes lazy argument values, and returns lazy return values, the function name ends with /lazy by convention
-;;;  - a strict function takes strict argument values, and returns strict return values
+;;; Function argument values and return values:
+;;;  - a lazy function takes lazy argument values, and returns lazy return values, the function name ends with the /lazy suffix by convention
+;;;  - an eager function takes eager argument values, and returns eager return values
 ;;;
 ;;; Defining functions:
-;;;  - a lazy function must be defined by the special definer (DEF LAZY-FUNCTION ...)
-;;;  - a strict function can be defined by the standard function definition forms
+;;;  - a lazy function must be defined by the special definer (DEF LAZY-FUNCTION ...) which also defines the eager function
+;;;  - an eager function can be defined by the standard function definition forms like (DEFUN ...)
 ;;;
 ;;; Calling a function:
-;;;  - when a strict function calls a strict function (already provided by the VM)
-;;;    it passes argument values untouched, and takes return values untouched
-;;;  - when a strict function calls a lazy function (a separate function is created for this without suffix)
-;;;    it passes argument values untouched, and forces return values recursively
-;;;  - when a lazy function calls a lazy function (lazy function names end with /lazy)
-;;;    it passes argument values untouched, and takes return values untouched
-;;;  - when a lazy function calls a strict function
-;;;    it forces argument values recursively unless the argument is marked lazy, and takes return values untouched
+;;;  - when an eager function calls an eager function (already provided by the lisp vm)
+;;;    it passes eager argument values untouched, and takes eager return values untouched
+;;;  - when an eager function calls a lazy function (a separate function is created automatically without the /lazy suffix)
+;;;    it passes argument eager values untouched, and forces lazy return values recursively
+;;;  - when a lazy function calls a lazy function (lazy function names end with the /lazy suffix)
+;;;    it passes lazy argument values untouched, and takes lazy return values untouched
+;;;  - when a lazy function calls an eager function
+;;;    it forces lazy argument values recursively unless the argument is marked to be passed lazily, and takes eager return values untouched
 
 ;;;;;;
 ;;; Delay and Force
@@ -86,13 +86,13 @@
 (def (namespace e) lazy-function)
 
 (def (macro e) with-lazy-eval (&body forms)
-  "WITH-LAZY-EVAL evaluates FORMS using lazy evaluation semantics and returns a strict value."
+  "WITH-LAZY-EVAL evaluates FORMS using lazy evaluation semantics and returns an eager value."
   `(force-recursively
     ,@(with-active-layers (lazy-eval)
         (mapcar 'unwalk-form (body-of (walk-form `(progn ,@forms)))))))
 
 (def (definer e) lazy-function (name args &body forms)
-  "Defines a function called NAME with arguments ARGS and the body FORMS. The function is defined in both LAZY and STRICT forms."
+  "Defines a function called NAME with arguments ARGS and the body FORMS. The function is defined in both LAZY and EAGER forms."
   (bind ((lazy-function-name (lazy-function-name name))
          (lazy-forms (with-active-layers (lazy-eval)
                        (setf (find-lazy-function name) (lambda ()))
@@ -116,7 +116,7 @@
   ())
 
 (def (function e) lazy (value)
-  "LAZY is marker to signify the intent that VALUE must be passed in lazily instead of strictly to a strict function. This can only be done if the strict function does not look at the actual value (e.g. CONS)."
+  "LAZY is marker to signify the intent that VALUE must be passed in lazily instead of eagerly to an eager function. This can only be done if the eager function does not look at the actual value (e.g. CONS)."
   value)
 
 (def layered-method hu.dwim.walker::function-name? :in lazy-eval (name)
