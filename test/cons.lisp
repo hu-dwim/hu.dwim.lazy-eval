@@ -9,8 +9,14 @@
 ;;;;;;
 ;;; cons
 
+(def lazy-function null (candidate)
+  (common-lisp:null candidate))
+
 (def lazy-function cons (car cdr)
   (common-lisp:cons (lazy car) (lazy cdr)))
+
+(def lazy-function consp (candidate)
+  (common-lisp:consp candidate))
 
 (def lazy-function car (cell)
   (common-lisp:car cell))
@@ -19,6 +25,8 @@
   (common-lisp:cdr cell))
 
 (def test test/cons ()
+  (is (consp (cons 1 2)))
+  (is (not (consp nil)))
   (is (null (car nil)))
   (is (= 1 (car (cons 1 2))))
   (is (= 1 (with-lazy-eval (car (cons 1 2)))))

@@ -13,7 +13,9 @@
   :depends-on (:hu.dwim.lazy-eval
                :hu.dwim.stefil+hu.dwim.def)
   :components ((:module "test"
-                :components ((:file "package")
-                             (:file "suite" :depends-on ("package"))
-                             (:file "cons" :depends-on ("suite"))
-                             (:file "prime" :depends-on ("cons"))))))
+                :components ((:file "cons" :depends-on ("suite"))
+                             (:file "fringe" :depends-on ("list"))
+                             (:file "list" :depends-on ("cons"))
+                             (:file "package")
+                             (:file "prime" :depends-on ("list"))
+                             (:file "suite" :depends-on ("package"))))))

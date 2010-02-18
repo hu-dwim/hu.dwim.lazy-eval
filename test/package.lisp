@@ -12,7 +12,13 @@
         :hu.dwim.lazy-eval
         :hu.dwim.stefil
         :hu.dwim.syntax-sugar)
-  (:shadow #:cons
+  (:shadow #:null
+           #:cons
+           #:consp
            #:car
-           #:cdr)
+           #:cdr
+           #:equal
+           #:append
+           #:map
+           #:flatten)
   (:readtable-setup (enable-standard-hu.dwim-syntaxes)))

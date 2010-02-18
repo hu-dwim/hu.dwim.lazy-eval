@@ -98,8 +98,6 @@
                        (setf (find-lazy-function name) (lambda ()))
                        (mapcar 'unwalk-form (body-of (walk-form `(lambda ,args ,@forms)))))))
     `(progn
-       (eval-when (:compile-toplevel)
-         (setf (find-lazy-function ',name) (lambda ())))
        (def function ,name ,args
          (force-recursively (,lazy-function-name ,@args)))
        (def function ,lazy-function-name ,args
@@ -107,6 +105,8 @@
              (delay ,@lazy-forms)
              (bind ((*lazy-function-call-level* (1+ *lazy-function-call-level*)))
                ,@lazy-forms)))
+       (eval-when (:load-toplevel)
+         (setf (find-lazy-function ',name) (fdefinition ',name)))
        (fdefinition ',name))))
 
 ;;;;;;
@@ -123,14 +123,23 @@
   (or (call-next-method)
       (find-lazy-function name :otherwise nil)))
 
+(def layered-method unwalk-form :in lazy-eval ((form if-form))
+  `(if (force ,(unwalk-form (condition-of form)))
+       ,(unwalk-form (then-of form))
+       ,@(awhen (unwalk-form (else-of form))
+           (list it))))
+
 (def layered-method unwalk-form :in lazy-eval ((form application-form))
   (bind ((operator (operator-of form)))
     (cond ((find-lazy-function operator :otherwise nil)
            `(,(lazy-function-name operator) ,@(mapcar 'unwalk-form (arguments-of form))))
           (t
            `(,operator ,@(mapcar (lambda (argument)
-                                   (if (and (typep argument 'free-application-form)
-                                            (eq 'lazy (operator-of argument)))
-                                       (unwalk-form (first (arguments-of argument)))
-                                       `(force ,(unwalk-form argument))))
+                                   (cond ((and (typep argument 'free-application-form)
+                                               (eq 'lazy (operator-of argument)))
+                                          (unwalk-form (first (arguments-of argument))))
+                                         ((typep argument 'constant-form)
+                                          (unwalk-form argument))
+                                         (t
+                                          `(force ,(unwalk-form argument)))))
                                  (arguments-of form)))))))
