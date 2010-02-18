@@ -23,4 +23,4 @@
   (is (same-fringe '(1 (2 3 (4 5) 6) 7 8) '((1 (2 3 4) 5) 6 (7 8))))
   (is (with-lazy-eval (always (take (stream-equal (repeat 1) (repeat 1)) 100))))
   (is (with-lazy-eval (always (take (stream-equal (repeat 1) (every-nth (repeat 1) 5)) 100))))
-  (is (with-lazy-eval (always (same-fringe (random-tree) (random-tree))))))
+  (is (not (with-lazy-eval (same-fringe (random-tree) (random-tree))))))
