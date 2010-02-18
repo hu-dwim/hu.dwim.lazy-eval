@@ -18,4 +18,5 @@
                              (:file "list" :depends-on ("cons"))
                              (:file "package")
                              (:file "prime" :depends-on ("list"))
+                             (:file "quicksort" :depends-on ("list"))
                              (:file "suite" :depends-on ("package"))))))
