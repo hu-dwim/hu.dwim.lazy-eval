@@ -34,19 +34,30 @@
 ;;;;;;
 ;;; Delay and Force
 
+(def (class e) promise ()
+  ()
+  (:metaclass funcallable-standard-class))
+
 (def (macro e) delay (&body forms)
   "DELAY takes a list of FORMS and creates a delayed computation that will evaluate FORMS as an implicit progn when invoked. The result of DELAY is a lambda or closure (capturing the necessary environment) that must be given to FORCE to get the actual value behind. A delayed computation is only evaluated once, thus the computation result is remembered and reused on subsequent invokations."
-  (bind ((variable (gensym))
+  (bind ((value (gensym))
+         (promise (gensym))
          (unbound-value (gensym)))
-    `(bind ((,variable ',unbound-value))
-       (lambda ()
-         (if (eq ,variable ',unbound-value)
-             (setf ,variable (progn ,@forms))
-             ,variable)))))
+    `(bind ((,value ',unbound-value)
+            (,promise (make-instance 'promise)))
+       (set-funcallable-instance-function (lazy ,promise)
+                                          (lambda ()
+                                            (if (eq ,value ',unbound-value)
+                                                (setf ,value (progn ,@forms))
+                                                ,value)))
+       ,promise)))
+
+(def (function e) promise? (value)
+  (typep value 'promise))
 
 (def (function e) force (value)
   "FORCE takes a VALUE that may or may not be a delayed computation and returns a value that is definitely not a delayed computation."
-  (if (functionp value)
+  (if (promise? value)
       (force (funcall value))
       value))
 
@@ -56,7 +67,7 @@
   (:method (value)
     value)
 
-  (:method ((value function))
+  (:method ((value promise))
     (force-recursively (funcall value)))
 
   (:method ((value cons))
@@ -116,7 +127,7 @@
   ())
 
 (def (function e) lazy (value)
-  "LAZY is marker to signify the intent that VALUE must be passed in lazily instead of eagerly to an eager function. This can only be done if the eager function does not look at the actual value (e.g. CONS)."
+  "LAZY is a marker to signify the intent that VALUE must be passed in lazily instead of eagerly to an eager function. For example, if the eager function does not look at the actual value (e.g. CONS)."
   value)
 
 (def layered-method hu.dwim.walker::function-name? :in lazy-eval (name)
