@@ -13,7 +13,8 @@
   :depends-on (:hu.dwim.lazy-eval
                :hu.dwim.stefil+hu.dwim.def)
   :components ((:module "test"
-                :components ((:file "cons" :depends-on ("suite"))
+                :components ((:file "combinator" :depends-on ("suite"))
+                             (:file "cons" :depends-on ("suite"))
                              (:file "fringe" :depends-on ("list"))
                              (:file "list" :depends-on ("cons"))
                              (:file "package")

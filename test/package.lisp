@@ -20,5 +20,6 @@
            #:equal
            #:append
            #:map
-           #:flatten)
+           #:flatten
+           #:factorial)
   (:readtable-setup (enable-standard-hu.dwim-syntaxes)))
