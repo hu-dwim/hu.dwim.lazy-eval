@@ -4,9 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.def)
 
-(defpackage :hu.dwim.lazy-eval.documentation
+(def package :hu.dwim.lazy-eval.documentation
   (:use :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
@@ -15,7 +15,6 @@
         :hu.dwim.syntax-sugar
         :hu.dwim.util
         :hu.dwim.wui)
-
   (:shadowing-import-from :hu.dwim.lazy-eval
                           #:delay
                           #:force
