@@ -10,7 +10,7 @@
 ;;; Y combinator
 
 (def lazy-function y-combinator (f)
-  (funcall f (lazy (y-combinator f))))
+  (funcall f (lazily (y-combinator f))))
 
 (def lazy-function factorial* (recurse)
   (lambda (n)

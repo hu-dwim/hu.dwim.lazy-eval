@@ -45,7 +45,7 @@
          (unbound-value (gensym)))
     `(bind ((,value ',unbound-value)
             (,promise (make-instance 'promise)))
-       (set-funcallable-instance-function (lazy ,promise)
+       (set-funcallable-instance-function (lazily ,promise)
                                           (lambda ()
                                             (if (eq ,value ',unbound-value)
                                                 (setf ,value (progn ,@forms))
@@ -126,8 +126,8 @@
 (def layer lazy-eval ()
   ())
 
-(def (function e) lazy (value)
-  "LAZY is a marker to signify the intent that VALUE must be passed in lazily instead of eagerly to an eager function. For example, if the eager function does not look at the actual value (e.g. CONS)."
+(def (function e) lazily (value)
+  "LAZILY is a marker to signify the intent that VALUE must be passed in lazily instead of eagerly to an eager function. For example, if the eager function does not look at the actual value (e.g. CONS)."
   value)
 
 (def layered-method hu.dwim.walker::function-name? :in lazy-eval (name)
@@ -147,7 +147,7 @@
           (t
            `(,operator ,@(mapcar (lambda (argument)
                                    (cond ((and (typep argument 'free-application-form)
-                                               (eq 'lazy (operator-of argument)))
+                                               (eq 'lazily (operator-of argument)))
                                           (unwalk-form (first (arguments-of argument))))
                                          ((typep argument 'constant-form)
                                           (unwalk-form argument))

@@ -13,7 +13,7 @@
   (common-lisp:null candidate))
 
 (def lazy-function cons (car cdr)
-  (common-lisp:cons (lazy car) (lazy cdr)))
+  (common-lisp:cons (lazily car) (lazily cdr)))
 
 (def lazy-function consp (candidate)
   (common-lisp:consp candidate))
