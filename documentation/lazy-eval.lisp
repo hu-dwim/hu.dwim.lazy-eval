@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.lazy-eval.documentation)
 
-(def project :hu.dwim.lazy-eval :path (system-pathname :hu.dwim.lazy-eval))
+(def project :hu.dwim.lazy-eval)
 
 (def book user-guide (:title "User guide")
   (chapter (:title "Introduction")
