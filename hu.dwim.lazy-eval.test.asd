@@ -4,12 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(load-system :hu.dwim.asdf)
-
-(in-package :hu.dwim.asdf)
-
 (defsystem :hu.dwim.lazy-eval.test
-  :class hu.dwim.test-system
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.test-system"
   :depends-on (:hu.dwim.lazy-eval
                :hu.dwim.stefil+hu.dwim.def)
   :components ((:module "test"

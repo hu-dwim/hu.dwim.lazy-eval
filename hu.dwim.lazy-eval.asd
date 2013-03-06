@@ -4,12 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(load-system :hu.dwim.asdf)
-
-(in-package :hu.dwim.asdf)
-
 (defsystem :hu.dwim.lazy-eval
-  :class hu.dwim.system
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.system"
   :author ("Levente Mészáros <levente.meszaros@gmail.com>")
   :description "Delimieted, compiled lazy evaluation."
   :depends-on (:hu.dwim.common
