@@ -4,7 +4,7 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :hu.dwim.lazy-eval.test)
+(in-package :hu.dwim.lazy-eval/test)
 
 ;;;;;;
 ;;; cons

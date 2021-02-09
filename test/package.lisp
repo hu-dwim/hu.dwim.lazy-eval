@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.def)
 
-(def package :hu.dwim.lazy-eval.test
+(def package :hu.dwim.lazy-eval/test
   (:use :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.lazy-eval

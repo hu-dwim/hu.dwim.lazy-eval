@@ -4,6 +4,6 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :hu.dwim.lazy-eval.test)
+(in-package :hu.dwim.lazy-eval/test)
 
 (def suite* (test :in root-suite))
