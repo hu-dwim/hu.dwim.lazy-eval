@@ -36,7 +36,7 @@
 (defsystem :hu.dwim.lazy-eval/documentation
   :defsystem-depends-on (:hu.dwim.asdf)
   :class "hu.dwim.asdf:hu.dwim.documentation-system"
-  :depends-on (:hu.dwim.lazy-eval.test
+  :depends-on (:hu.dwim.lazy-eval/test
                :hu.dwim.presentation)
   :components ((:module "documentation"
                 :components ((:file "lazy-eval" :depends-on ("package"))
