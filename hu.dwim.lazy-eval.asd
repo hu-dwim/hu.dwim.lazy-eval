@@ -10,7 +10,7 @@
   :author ("Levente Mészáros <levente.meszaros@gmail.com>")
   :description "Delimieted, compiled lazy evaluation."
   :depends-on (:hu.dwim.common
-               :hu.dwim.def.namespace
+               :hu.dwim.def/namespace
                :hu.dwim.util
                :hu.dwim.defclass-star
                :hu.dwim.walker)
